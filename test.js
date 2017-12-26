@@ -30,27 +30,27 @@ var oldSlope = 0;
 var dipDetected;
 var hillDetected;
 
-var listingPriceE;
-var tempE;
+var ETHlistingPrice;
+var ETHtemp;
 var slopeE;
 var ethQuantity = 0;
-var associatedBuyinE;
-var buyReadyE;
-var sellReadyE;
+var ETHassociatedBuyin;
+var ETHbuyReady;
+var ETHsellReady;
 var oldSlopeE = 0;
-var dipDetectedE;
-var hillDetectedE;
+var ETHdipDetected;
+var ETHhillDetected;
 
-var listingPriceL;
-var tempL;
+var LTClistingPrice;
+var LTCtemp;
 var slopeL;
 var ltcQuantity = 0;
-var associatedBuyinL;
-var buyReadyL;
-var sellReadyL;
+var LTCassociatedBuyin;
+var LTCbuyReady;
+var LTCsellReady;
 var oldSlopeL = 0;
-var dipDetectedL;
-var hillDetectedL;
+var LTCdipDetected;
+var LTChillDetected;
 
 //Runn 24HrStats once for all three currencies to set base values
 clientBTC.getProduct24HrStats((error, response, data) => {
@@ -69,9 +69,9 @@ clientETH.getProduct24HrStats((error, response, data) => {
 		console.log(error);
 	}
 	else {
-		listingPriceE = parseFloat(data.last);
-		associatedBuyinE = parseFloat(data.last);
-		buyETH(listingPriceE);
+		ETHlistingPrice = parseFloat(data.last);
+		ETHassociatedBuyin = parseFloat(data.last);
+		buyETH(ETHlistingPrice);
 	}
 });
 
@@ -80,9 +80,9 @@ clientLTC.getProduct24HrStats((error, response, data) => {
 		console.log(error);
 	}
 	else {
-		listingPriceL = parseFloat(data.last);
-		associatedBuyinL = parseFloat(data.last);
-		buyLTC(listingPriceL);
+		LTClistingPrice = parseFloat(data.last);
+		LTCassociatedBuyin = parseFloat(data.last);
+		buyLTC(LTClistingPrice);
 	}
 });
 
@@ -103,8 +103,8 @@ function sellBTC(btcPrice) {
 
 function sellETH(ethPrice) {
 	var floatVersion = parseFloat(ethPrice);
-	buyReadyE = true;
-	sellReadyE = false;
+	ETHbuyReady = true;
+	ETHsellReady = false;
 	cash += ethQuantity * ethPrice - 1;
 	console.log('		CASH MADE: ' + (ethQuantity * ethPrice - 1));
 	console.log('		TOTALCASH: ' + cash);
@@ -112,8 +112,8 @@ function sellETH(ethPrice) {
 
 function sellLTC(ltcPrice) {
 	var floatVersion = parseFloat(ltcPrice);
-	buyReadyL = true;
-	sellReadyL = false;
+	LTCbuyReady = true;
+	LTCsellReady = false;
 	cash += ltcQuantity * ltcPrice - 1;
 	console.log('		CASH MADE: ' + (ltcQuantity * ltcPrice - 1));
 	console.log('		TOTALCASH: ' + cash);
@@ -130,18 +130,18 @@ function buyBTC(btcPrice) {
 
 function buyETH(ethPrice) {
 	var floatVersion = parseFloat(ethPrice);
-	associatedBuyinE = floatVersion;
-	buyReadyE = false;
-	sellReadyE = true;
+	ETHassociatedBuyin = floatVersion;
+	ETHbuyReady = false;
+	ETHsellReady = true;
 	console.log('			Buying in ETH @ ' + ethPrice);
 	ethQuantity = 1.0 / floatVersion;
 }
 
 function buyLTC(ltcPrice) {
 	var floatVersion = parseFloat(ltcPrice);
-	associatedBuyinL = floatVersion;
-	buyReadyL = false;
-	sellReadyL = true;
+	LTCassociatedBuyin = floatVersion;
+	LTCbuyReady = false;
+	LTCsellReady = true;
 	console.log('			Buying in LTC @ ' + ltcPrice);
 	ltcQuantity = 1.0 / floatVersion;
 }
@@ -159,15 +159,16 @@ function determineSlope(listing, oldListing, oldestSlope) {
 	return mySlope;
 }
 
+
 function determineETHSlope(listing, oldListing, oldestSlope) {
 	var mySlope = (listing - oldListing) / (iFrequency / 1000);
 	if(mySlope > 0 && oldestSlope < 0) {
 		console.log('Detected a dip!');
-		dipDetectedE = true;
+		ETHdipDetected = true;
 	}
 	else if (mySlope < 0 && oldestSlope > 0) {
 		console.log('Detected a cresting hill!');
-		hillDetectedE = true;
+		ETHhillDetected = true;
 	}
 	return mySlope;
 }
@@ -176,11 +177,11 @@ function determineLTCSlope(listing, oldListing, oldestSlope) {
 	var mySlope = (listing - oldListing) / (iFrequency / 1000);
 	if(mySlope > 0 && oldestSlope < 0) {
 		console.log('Detected a dip!');
-		dipDetectedL = true;
+		LTCdipDetected = true;
 	}
 	else if (mySlope < 0 && oldestSlope > 0) {
 		console.log('Detected a cresting hill!');
-		hillDetectedL = true;
+		LTChillDetected = true;
 	}
 	return mySlope;
 }
@@ -225,27 +226,27 @@ function probeETH() {
 			console.log(error);
 		}
 		else {
-			if(parseFloat(data.last) > listingPriceE) {
+			if(parseFloat(data.last) > ETHlistingPrice) {
 				console.log(data.last + ': ETH UP');
-				tempE = listingPriceE;
-				listingPriceE = parseFloat(data.last);
-				slopeE = determineETHSlope(listingPriceE, tempE, oldSlopeE);
+				ETHtemp = ETHlistingPrice;
+				ETHlistingPrice = parseFloat(data.last);
+				slopeE = determineETHSlope(ETHlistingPrice, ETHtemp, oldSlopeE);
 				console.log('ETH Slope is ' + slopeE);
-				if(buyReadyE && dipDetectedE) {
-					buyETH(listingPriceE);
-					dipDetectedE = false;
+				if(ETHbuyReady && ETHdipDetected) {
+					buyETH(ETHlistingPrice);
+					ETHdipDetected = false;
 				}
 				oldSlopeE = slopeE;
 			}
-			else if(parseFloat(data.last) < listingPriceE) {
+			else if(parseFloat(data.last) < ETHlistingPrice) {
 				console.log(data.last + ': ETH DOWN');
-				tempE = listingPriceE;
-				listingPriceE = parseFloat(data.last);
-				slopeE = determineETHSlope(listingPriceE, tempE, oldSlopeE);
+				ETHtemp = ETHlistingPrice;
+				ETHlistingPrice = parseFloat(data.last);
+				slopeE = determineETHSlope(ETHlistingPrice, ETHtemp, oldSlopeE);
 				console.log('ETH Slope is ' + slopeE);
-				if(associatedBuyinE < listingPriceE && sellReadyE && hillDetectedE) {
-					sellETH(listingPriceE);
-					hillDetectedE = false;
+				if(ETHassociatedBuyin < ETHlistingPrice && ETHsellReady && ETHhillDetected) {
+					sellETH(ETHlistingPrice);
+					ETHhillDetected = false;
 				}
 				oldSlopeE = slopeE;
 			}
@@ -259,27 +260,27 @@ function probeLTC() {
 			console.log(error);
 		}
 		else {
-			if(parseFloat(data.last) > listingPriceL) {
+			if(parseFloat(data.last) > LTClistingPrice) {
 				console.log(data.last + ': LTC UP');
-				tempL = listingPriceL;
-				listingPriceL = parseFloat(data.last);
-				slopeL = determineLTCSlope(listingPriceL, tempL, oldSlopeL);
+				LTCtemp = LTClistingPrice;
+				LTClistingPrice = parseFloat(data.last);
+				slopeL = determineLTCSlope(LTClistingPrice, LTCtemp, oldSlopeL);
 				console.log('LTC Slope is ' + slopeL);
-				if(buyReadyL && dipDetectedL) {
-					buyLTC(listingPriceL);
-					dipDetectedL = false;
+				if(LTCbuyReady && LTCdipDetected) {
+					buyLTC(LTClistingPrice);
+					LTCdipDetected = false;
 				}
 				oldSlopeL = slopeL;
 			}
-			else if(parseFloat(data.last) < listingPriceL) {
+			else if(parseFloat(data.last) < LTClistingPrice) {
 				console.log(data.last + ': LTC DOWN');
-				tempL = listingPriceL;
-				listingPriceL = parseFloat(data.last);
-				slopeL = determineLTCSlope(listingPriceL, tempL, oldSlopeL);
+				LTCtemp = LTClistingPrice;
+				LTClistingPrice = parseFloat(data.last);
+				slopeL = determineLTCSlope(LTClistingPrice, LTCtemp, oldSlopeL);
 				console.log('LTC Slope is ' + slopeL);
-				if(associatedBuyinL < listingPriceL && sellReadyL && hillDetectedL) {
-					sellLTC(listingPriceL);
-					hillDetectedL = false;
+				if(LTCassociatedBuyin < LTClistingPrice && LTCsellReady && LTChillDetected) {
+					sellLTC(LTClistingPrice);
+					LTChillDetected = false;
 				}
 				oldSlopeL = slopeL;
 			}
