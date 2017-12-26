@@ -86,12 +86,12 @@ clientLTC.getProduct24HrStats((error, response, data) => {
 	}
 });
 
-// STARTS and Resets the loop if any
-function startLoop() {
-    if(myInterval > 0) clearInterval(myInterval); 
-    myInterval = setInterval(checkPrices, iFrequency);
-}
-
+/* The following three functions take an input of a given crypto price
+   and sells it. We set buyReady and sellReady to true and false 
+   respectively because once we sell, we are ready to buy, and also not 
+   ready to sell again. We increment cash by our crypto quantity times 
+   the current crypto price minus one, because we buy in at one dollar 
+   every iteration. */
 function sellBTC(btcPrice) {
 	var floatVersion = parseFloat(btcPrice);
 	buyReady = true;
@@ -119,6 +119,13 @@ function sellLTC(ltcPrice) {
 	console.log('		TOTALCASH: ' + cash);
 }
 
+/* The following three functions take an input of a given crypto price
+   and buys one dollar's worth. We set the associatedBuyin to the current
+   price, for later use because we dont want to sell unless the new "sell"
+   price is more than the associated original buyin price. We then set 
+   appropriate buyReady/sellReady values to indicate that we've purchased 
+   and set our quantity to 1 / price, because we only buy one dollars 
+   worth. */
 function buyBTC(btcPrice) {
 	var floatVersion = parseFloat(btcPrice);
 	associatedBuyin = floatVersion;
@@ -146,6 +153,10 @@ function buyLTC(ltcPrice) {
 	ltcQuantity = 1.0 / floatVersion;
 }
 
+
+/* The following three functions simply determine the slope of the 
+   prices, based on the last read. We use the old slope value to determine
+   if we've hit a dip or hill, which could indicate a sell condition. */
 function determineSlope(listing, oldListing, oldestSlope) {
 	var mySlope = (listing - oldListing) / (iFrequency / 1000);
 	if(mySlope > 0 && oldestSlope < 0) {
@@ -158,7 +169,6 @@ function determineSlope(listing, oldListing, oldestSlope) {
 	}
 	return mySlope;
 }
-
 
 function determineETHSlope(listing, oldListing, oldestSlope) {
 	var mySlope = (listing - oldListing) / (iFrequency / 1000);
@@ -186,6 +196,8 @@ function determineLTCSlope(listing, oldListing, oldestSlope) {
 	return mySlope;
 }
 
+/* The following three functions actually probe each cryptotype, and make
+   the call as to whether we should buy or sell. */
 function probeBTC() {
 	clientBTC.getProduct24HrStats((error, response, data) => {
 		if(error) {
@@ -286,6 +298,12 @@ function probeLTC() {
 			}
 		}
 	});
+}
+
+// Starts and resets the loop that pulls data
+function startLoop() {
+    if(myInterval > 0) clearInterval(myInterval); 
+    myInterval = setInterval(checkPrices, iFrequency);
 }
 
 // Main function
