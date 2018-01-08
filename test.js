@@ -12,7 +12,7 @@ var clientLTC = new gdax.PublicClient('LTC-USD');
 
 
 // Data for timer, expressed in miliseconds
-var iFrequency = 30000; 
+var iFrequency = 600000; 
 var myInterval = 0;
 
 // Global Variables for tracking ALL cryptotrade activity
@@ -51,6 +51,10 @@ var LTCsellReady;
 var oldSlopeL = 0;
 var LTCdipDetected;
 var LTChillDetected;
+
+///////////////////////
+// Helper functions ///
+///////////////////////
 
 //Runn 24HrStats once for all three currencies to set base values
 clientBTC.getProduct24HrStats((error, response, data) => {
@@ -196,6 +200,17 @@ function determineLTCSlope(listing, oldListing, oldestSlope) {
 	return mySlope;
 }
 
+/* This is a function that basically acts as harm reduction. If the listing
+   price drops so low that we would lose ____ of our profit, we sell. 
+   Without this buyout, having a listing price drop lower than the price we
+   bought it would stop our script from ever selling it until we rise above 
+   that price again, but this function makes it so we can recognize that a 
+   big drop is happening and minimize our losses. If there is a big drop 
+   ahppenning, we want to buy in at that low dropped price. */
+function secretOptionC() {
+
+}
+
 /* The following three functions actually probe each cryptotype, and make
    the call as to whether we should buy or sell. */
 function probeBTC() {
@@ -300,13 +315,16 @@ function probeLTC() {
 	});
 }
 
+//////////////////////
+// Main functions ////
+//////////////////////
+
 // Starts and resets the loop that pulls data
 function startLoop() {
     if(myInterval > 0) clearInterval(myInterval); 
     myInterval = setInterval(checkPrices, iFrequency);
 }
 
-// Main function
 function checkPrices()
 {
 	probeBTC();
